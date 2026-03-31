@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CyberSecurityChatbot.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,8 @@ namespace CyberSecurityChatbot
     {
         static void Main(string[] args)
         {
+            ChatbotService chatbot = new ChatbotService();
+            chatbot.Start();   
         }
     }
 }
