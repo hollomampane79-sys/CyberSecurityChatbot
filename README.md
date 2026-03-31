@@ -64,3 +64,23 @@ How to Run the Project
 4.Run the application:
   Press F5 or click Start
 
+CyberSecurityChatbot/
+│
+├── Services/
+│   └── ResponseService.cs
+│
+├── Utils/
+│   ├── ConsoleHelper.cs
+│   └── AudioPlayer.cs
+│
+├── Models/
+│   └── User.cs
+│
+├── Program.cs
+├── README.md
+└── .github/workflows/
+
+Author
+
+Kabelo
+PROG6221 – Programming 2A
