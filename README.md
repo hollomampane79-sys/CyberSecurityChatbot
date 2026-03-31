@@ -54,6 +54,8 @@ Technologies Used
 ---
 
 How to Run the Project
+youtube link:
+https://youtu.be/sKuJdf1E-hs
 
 1. Clone the repository:
    ```bash
