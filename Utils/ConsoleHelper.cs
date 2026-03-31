@@ -12,7 +12,7 @@ namespace CyberSecurityChatbot.Utils
         // Allow an optional response to be displayed. Default is null to preserve existing call sites.
         public static void DisplayHeader(string response = null)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.ForegroundColor = ConsoleColor.Yellow;
             if (!string.IsNullOrEmpty(response))
             {
                 Console.WriteLine("Bot: " + response);
