@@ -1,0 +1,198 @@
+﻿<Window x:Class="CyberSecurityChatbot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CyberShield — Cybersecurity Awareness Bot"
+        Height="780" Width="1100"
+        MinHeight="600" MinWidth="800"
+        WindowStartupLocation="CenterScreen"
+        Background="#0A0E1A"
+        FontFamily="Consolas">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LEFT SIDEBAR -->
+        <Border Grid.Column="0" Background="#0F1628"
+                BorderBrush="#1A3A5C" BorderThickness="0,0,1,0">
+            <DockPanel>
+
+                <!-- ASCII Art + Title -->
+                <Border DockPanel.Dock="Top" Padding="12,16,12,12"
+                        BorderBrush="#1A3A5C" BorderThickness="0,0,0,1">
+                    <StackPanel>
+                        <TextBlock FontFamily="Consolas" FontSize="7.5"
+                                   Foreground="#00D4FF" LineHeight="11"
+                                   Text="  ██████╗██╗   ██╗██████╗ &#xA; ██╔════╝╚██╗ ██╔╝██╔══██╗&#xA; ██║      ╚████╔╝ ██████╔╝&#xA; ██║       ╚██╔╝  ██╔══██╗&#xA; ╚██████╗   ██║   ██████╔╝&#xA;  ╚═════╝   ╚═╝   ╚═════╝"/>
+                        <TextBlock FontFamily="Consolas" FontSize="7"
+                                   Foreground="#00FF88" Margin="0,4,0,0"
+                                   Text=" ███████╗██╗  ██╗██╗███████╗██╗     ██████╗ &#xA; ██╔════╝██║  ██║██║██╔════╝██║     ██╔══██╗&#xA; ███████╗███████║██║█████╗  ██║     ██║  ██║&#xA; ╚════██║██╔══██║██║██╔══╝  ██║     ██║  ██║&#xA; ███████║██║  ██║██║███████╗███████╗██████╔╝&#xA; ╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚═════╝"/>
+                        <Rectangle Height="1" Margin="0,10,0,0">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="Transparent" Offset="0"/>
+                                    <GradientStop Color="#00D4FF" Offset="0.5"/>
+                                    <GradientStop Color="Transparent" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </StackPanel>
+                </Border>
+
+                <!-- User Status Panel -->
+                <Border DockPanel.Dock="Top" Margin="10,10,10,0"
+                        Padding="10,8" BorderBrush="#1A3A5C"
+                        BorderThickness="1" CornerRadius="6"
+                        Background="#141D35">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <Ellipse Width="8" Height="8" Fill="#00FF88"
+                                     Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="SYSTEM ONLINE" Foreground="#00FF88"
+                                       FontSize="10" FontWeight="Bold"/>
+                        </StackPanel>
+                        <TextBlock x:Name="UserNameLabel" Text="Agent: Anonymous"
+                                   Foreground="#8BA8C4" FontSize="11" Margin="0,2"/>
+                        <TextBlock x:Name="SentimentLabel" Text="Mood: Neutral"
+                                   Foreground="#8BA8C4" FontSize="11" Margin="0,2"/>
+                        <TextBlock x:Name="TopicLabel" Text="Focus: None"
+                                   Foreground="#8BA8C4" FontSize="11" Margin="0,2"/>
+                        <TextBlock x:Name="FavTopicLabel" Text="Interest: —"
+                                   Foreground="#8BA8C4" FontSize="11" Margin="0,2"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Quick Topic Chips -->
+                <StackPanel DockPanel.Dock="Top" Margin="10,14,10,0">
+                    <TextBlock Text="QUICK TOPICS" Foreground="#8BA8C4"
+                               FontSize="10" FontWeight="Bold" Margin="2,0,0,6"/>
+                    <WrapPanel>
+                        <Button Content="🔑 Passwords" Tag="password tips" Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                        <Button Content="🎣 Phishing"  Tag="phishing tips" Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                        <Button Content="🚫 Scams"     Tag="scam warning"  Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                        <Button Content="🔒 Privacy"   Tag="privacy tips"  Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                        <Button Content="🦠 Malware"   Tag="malware tips"  Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                        <Button Content="🌐 Browsing"  Tag="safe browsing" Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                        <Button Content="📶 Wi-Fi"     Tag="wifi security" Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                        <Button Content="🔐 2FA"       Tag="2fa tips"      Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                        <Button Content="💥 Breaches"  Tag="data breach"   Click="TopicChip_Click" Margin="2" Padding="8,4" FontSize="11" Background="#0F1628" Foreground="#8BA8C4" BorderBrush="#1A3A5C" Cursor="Hand"/>
+                    </WrapPanel>
+                </StackPanel>
+
+                <!-- Memory Panel -->
+                <Border DockPanel.Dock="Top" Margin="10,14,10,0"
+                        Padding="10,8" BorderBrush="#1A3A5C"
+                        BorderThickness="1" CornerRadius="6"
+                        Background="#0A0E1A">
+                    <StackPanel>
+                        <TextBlock Text="🧠 MEMORY" Foreground="#7B5EA7"
+                                   FontSize="10" FontWeight="Bold" Margin="0,0,0,6"/>
+                        <TextBlock x:Name="MemoryTopicsLabel"
+                                   Text="No topics discussed yet."
+                                   Foreground="#8BA8C4" FontSize="10"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Clear Button -->
+                <Button DockPanel.Dock="Bottom" Content="🗑  Clear Chat"
+                        Margin="10,0,10,10" Padding="10,7"
+                        Background="Transparent" Foreground="#8BA8C4"
+                        BorderBrush="#1A3A5C" FontSize="12"
+                        Cursor="Hand" Click="ClearChat_Click"/>
+
+            </DockPanel>
+        </Border>
+
+        <!-- RIGHT CHAT AREA -->
+        <DockPanel Grid.Column="1">
+
+            <!-- Top Bar -->
+            <Border DockPanel.Dock="Top" Padding="16,12"
+                    Background="#0F1628"
+                    BorderBrush="#1A3A5C" BorderThickness="0,0,0,1">
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="34" Height="34" CornerRadius="8" Margin="0,0,10,0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#00D4FF" Offset="0"/>
+                                    <GradientStop Color="#0055AA" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <TextBlock Text="🛡" FontSize="17"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="CyberShield Assistant"
+                                       Foreground="#E8F4F8" FontSize="15" FontWeight="Bold"/>
+                            <TextBlock x:Name="StatusBarText"
+                                       Text="Ready to help you stay secure online"
+                                       Foreground="#8BA8C4" FontSize="11"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="SentimentBadge" Padding="8,4"
+                                CornerRadius="10" Margin="0,0,10,0"
+                                Background="#141D35" BorderBrush="#1A3A5C" BorderThickness="1">
+                            <TextBlock x:Name="SentimentBadgeText"
+                                       Text="😐 neutral" Foreground="#8BA8C4" FontSize="11"/>
+                        </Border>
+                        <TextBlock x:Name="ClockLabel" Foreground="#8BA8C4"
+                                   FontSize="11" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Input Bar -->
+            <Border DockPanel.Dock="Bottom" Padding="14,10"
+                    Background="#0F1628"
+                    BorderBrush="#1A3A5C" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="InputBox" Grid.Column="0"
+                             Background="#141D35" Foreground="#E8F4F8"
+                             CaretBrush="#00D4FF" BorderBrush="#1A3A5C"
+                             FontSize="13" Padding="10,8"
+                             VerticalAlignment="Center"
+                             Margin="0,0,10,0"
+                             KeyDown="InputBox_KeyDown"
+                             TextChanged="InputBox_TextChanged"/>
+                    <TextBlock x:Name="PlaceholderText"
+                               Text="Ask me about cybersecurity..."
+                               Foreground="#3A5A7A" FontSize="13"
+                               Padding="12,8" VerticalAlignment="Center"
+                               IsHitTestVisible="False"/>
+                    <Button Grid.Column="1" Content="SEND ➤"
+                            Padding="18,8" FontWeight="Bold"
+                            FontSize="13" Foreground="#0A0E1A"
+                            BorderThickness="0" Cursor="Hand"
+                            Click="SendButton_Click">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#00D4FF" Offset="0"/>
+                                <GradientStop Color="#0088AA" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Chat Messages -->
+            <ScrollViewer x:Name="ChatScrollViewer"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="14,10">
+                <StackPanel x:Name="ChatPanel"/>
+            </ScrollViewer>
+
+        </DockPanel>
+    </Grid>
+</Window>
