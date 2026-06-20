@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Cybersecurity Quiz Engine — 12 randomised questions with scoring and feedback
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CyberSecurityChatbot.Models;
