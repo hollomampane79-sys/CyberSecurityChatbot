@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Activity Log Service — tracks all chatbot actions with timestamps
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
