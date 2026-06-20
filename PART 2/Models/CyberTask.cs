@@ -1,4 +1,5 @@
-﻿using System;
+﻿// CyberTask model — represents a user cybersecurity task with reminder and status
+using System;
 
 namespace CyberSecurityChatbot.Models
 {
