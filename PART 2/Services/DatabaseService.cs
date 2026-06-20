@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Database Service — JSON file storage for cybersecurity tasks
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
