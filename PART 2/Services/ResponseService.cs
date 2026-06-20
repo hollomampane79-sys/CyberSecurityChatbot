@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace CyberSecurityChatbot.Services
 {
@@ -13,7 +14,6 @@ namespace CyberSecurityChatbot.Services
         private readonly User _user;
         private string _lastTopic = string.Empty;
 
-        // Delegate for response generation
         public delegate string ResponseGenerator(string input);
 
         private readonly Dictionary<string, List<string>> _keywordResponses = new Dictionary<string, List<string>>
@@ -37,7 +37,7 @@ namespace CyberSecurityChatbot.Services
             ["scam"] = new List<string>
             {
                 "If something sounds too good to be true, it almost certainly is.",
-                "Never send money or gift cards to someone you haven't met in person.",
+                "Never send money or gift cards to someone you have not met in person.",
                 "Government agencies will never demand immediate payment by phone or threaten arrest.",
                 "Romance scams are rising — be cautious of online relationships where the person avoids video calls.",
                 "Always verify unexpected prize wins directly with the official organisation."
@@ -86,24 +86,77 @@ namespace CyberSecurityChatbot.Services
             {
                 "If your data is breached, change your passwords immediately and enable 2FA on affected accounts.",
                 "Monitor your bank statements for unusual activity after any breach notification.",
-                "Sign up for breach alerts at HaveIBeenPwned.com to be notified when your email is found in stolen data.",
+                "Sign up for breach alerts at HaveIBeenPwned.com to be notified when your email appears in stolen data.",
                 "Consider placing a credit freeze if sensitive financial information was exposed.",
                 "Companies are legally required to notify you of breaches — read those notifications carefully."
             }
         };
 
+        // NLP synonym map — maps alternate phrases to canonical keywords
+        private readonly Dictionary<string, string> _nlpSynonyms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["passphrase"] = "password",
+            ["credentials"] = "password",
+            ["login"] = "password",
+            ["pin"] = "password",
+            ["passcode"] = "password",
+            ["phishing"] = "phish",
+            ["fake email"] = "phish",
+            ["spam email"] = "phish",
+            ["smishing"] = "phish",
+            ["vishing"] = "phish",
+            ["spear phishing"] = "phish",
+            ["fraud"] = "scam",
+            ["con"] = "scam",
+            ["trick"] = "scam",
+            ["deceive"] = "scam",
+            ["personal data"] = "privacy",
+            ["personal info"] = "privacy",
+            ["data protection"] = "privacy",
+            ["gdpr"] = "privacy",
+            ["virus"] = "malware",
+            ["ransomware"] = "malware",
+            ["trojan"] = "malware",
+            ["spyware"] = "malware",
+            ["adware"] = "malware",
+            ["worm"] = "malware",
+            ["keylogger"] = "malware",
+            ["browser"] = "browse",
+            ["internet"] = "browse",
+            ["website"] = "browse",
+            ["https"] = "browse",
+            ["wi-fi"] = "wifi",
+            ["wireless"] = "wifi",
+            ["hotspot"] = "wifi",
+            ["router"] = "wifi",
+            ["network"] = "wifi",
+            ["two factor"] = "2fa",
+            ["two-factor"] = "2fa",
+            ["mfa"] = "2fa",
+            ["authenticator"] = "2fa",
+            ["verification code"] = "2fa",
+            ["otp"] = "2fa",
+            ["hack"] = "data breach",
+            ["hacked"] = "data breach",
+            ["leaked"] = "data breach",
+            ["compromised"] = "data breach",
+            ["stolen data"] = "data breach",
+            ["breach"] = "data breach",
+        };
+
         private readonly List<string> _followUpPhrases = new List<string>
         {
             "tell me more", "more", "explain more", "another tip", "give me another",
-            "what else", "continue", "go on", "more info", "elaborate", "expand"
+            "what else", "continue", "go on", "more info", "elaborate", "expand",
+            "keep going", "another one", "next tip", "more details"
         };
 
         private readonly List<string> _defaultResponses = new List<string>
         {
-            "I'm not sure I understand. Try asking about passwords, phishing, scams, privacy or malware.",
-            "That's outside my knowledge base. Try topics like 2FA, data breaches, Wi-Fi security or browsing.",
-            "I didn't quite catch that. I specialise in cybersecurity — try asking about a specific threat.",
-            "Hmm, not sure about that one. Ask me about password safety, privacy tips or how to spot scams!"
+            "I am not sure I understand. Try asking about passwords, phishing, scams, privacy or malware.",
+            "That is outside my knowledge base. Try topics like 2FA, data breaches, Wi-Fi security or safe browsing.",
+            "I did not quite catch that. I specialise in cybersecurity — try asking about a specific threat or topic.",
+            "Not sure about that one. Ask me about password safety, privacy tips or how to spot scams.\n\nOr try:\n  - \"add task\" to manage cybersecurity tasks\n  - \"start quiz\" to test your knowledge\n  - \"show activity log\" to see recent actions"
         };
 
         public ResponseService(SentimentService sentimentService, User user)
@@ -115,16 +168,21 @@ namespace CyberSecurityChatbot.Services
         public string GetResponse(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
-                return "Please type a message so I can help you!";
+                return "Please type a message so I can help you.";
 
             string lower = input.ToLower().Trim();
 
             // Greeting detection
-            if (lower.StartsWith("hello") || lower.StartsWith("hi") || lower.StartsWith("hey"))
+            if (Regex.IsMatch(lower, @"^(hello|hi|hey|good morning|good evening|howdy|greetings)"))
             {
                 string nameGreet = _user.HasName ? ", " + _user.Name : "";
-                return "Hey there" + nameGreet + "! How can I help you stay safe online today?";
+                return "Hello" + nameGreet + "! How can I help you stay safe online today?\n\n" +
+                       "You can type \"help\" to see everything I can do.";
             }
+
+            // Activity log trigger
+            if (IsActivityLogCommand(lower))
+                return "__SHOW_LOG__";
 
             // Sentiment detection
             string sentiment = _sentimentService.DetectSentiment(lower);
@@ -132,28 +190,28 @@ namespace CyberSecurityChatbot.Services
             _user.CurrentSentiment = sentiment;
 
             // Name storage
-            if (lower.StartsWith("my name is") || lower.StartsWith("i am") || lower.StartsWith("i'm"))
+            if (lower.StartsWith("my name is") || lower.StartsWith("i am") ||
+                lower.StartsWith("i'm") || lower.StartsWith("call me"))
             {
                 string name = ExtractName(input);
                 if (!string.IsNullOrEmpty(name))
                 {
                     _user.Name = name;
-                    return "Great to meet you, " + _user.Name + "! What cybersecurity topic would you like to explore?";
+                    return "Great to meet you, " + _user.Name + ". What cybersecurity topic would you like to explore?";
                 }
             }
 
             // Favourite topic storage
-            if (lower.Contains("interested in") || lower.Contains("i like") || lower.Contains("favourite topic"))
+            if (lower.Contains("interested in") || lower.Contains("i like") ||
+                lower.Contains("favourite topic") || lower.Contains("favorite topic"))
             {
-                foreach (var key in _keywordResponses.Keys)
+                string matched = ResolveKeyword(lower);
+                if (!string.IsNullOrEmpty(matched))
                 {
-                    if (lower.Contains(key))
-                    {
-                        _user.FavouriteTopic = key;
-                        _lastTopic = key;
-                        return "Great! I'll remember that you're interested in " + key + ". It's a crucial part of staying safe online.\n\n"
-                             + GetRandomResponse(key);
-                    }
+                    _user.FavouriteTopic = matched;
+                    _lastTopic = matched;
+                    return "I will remember that you are interested in " + matched + ". It is a crucial part of staying safe online.\n\n"
+                         + GetRandomResponse(matched);
                 }
             }
 
@@ -163,44 +221,67 @@ namespace CyberSecurityChatbot.Services
                 if (!string.IsNullOrEmpty(_lastTopic))
                 {
                     string personalNote = (_user.HasFavouriteTopic && _user.FavouriteTopic == _lastTopic)
-                        ? "As someone interested in " + _lastTopic + ", here's another tip: "
-                        : "Here's another tip on the same topic: ";
+                        ? "As someone interested in " + _lastTopic + ", here is another tip: "
+                        : "Here is another tip on the same topic: ";
                     return sentimentPrefix + personalNote + GetRandomResponse(_lastTopic);
                 }
-                return "I'd love to continue — could you mention a specific cybersecurity topic?";
+                return "I would love to continue — could you mention a specific cybersecurity topic?";
             }
 
             // Help command
             if (lower.Contains("help") || lower.Contains("topics") || lower.Contains("what can you"))
             {
-                return "I can help you with:\n\n" +
-                       "🔑 Passwords\n🎣 Phishing\n🚫 Scams\n🔒 Privacy\n" +
-                       "🦠 Malware\n🌐 Browsing\n📶 Wi-Fi\n🔐 2FA\n💥 Data Breaches\n\n" +
-                       "Just ask about any of these!";
+                return "I can help you with the following:\n\n" +
+                       "Cybersecurity Topics:\n" +
+                       "  Passwords, Phishing, Scams, Privacy,\n" +
+                       "  Malware, Browsing, Wi-Fi, 2FA, Data Breaches\n\n" +
+                       "Features:\n" +
+                       "  - \"add task\"          — manage your cybersecurity to-do list\n" +
+                       "  - \"start quiz\"        — test your cybersecurity knowledge\n" +
+                       "  - \"show activity log\" — see recent actions\n" +
+                       "  - \"show tasks\"        — view your saved tasks\n\n" +
+                       "Just type your question or use the tabs at the top.";
             }
 
-            // Keyword matching
-            foreach (var kvp in _keywordResponses)
+            // NLP keyword matching (direct + synonyms)
+            string keyword = ResolveKeyword(lower);
+            if (!string.IsNullOrEmpty(keyword))
             {
-                if (lower.Contains(kvp.Key))
-                {
-                    _lastTopic = kvp.Key;
+                _lastTopic = keyword;
+                if (!_user.TopicsDiscussed.Contains(keyword))
+                    _user.TopicsDiscussed.Add(keyword);
 
-                    if (!_user.TopicsDiscussed.Contains(kvp.Key))
-                        _user.TopicsDiscussed.Add(kvp.Key);
+                string personalise = (_user.HasFavouriteTopic && _user.FavouriteTopic == keyword)
+                    ? "As someone interested in " + keyword + ": "
+                    : "";
 
-                    string personalise = (_user.HasFavouriteTopic && _user.FavouriteTopic == kvp.Key)
-                        ? "As someone interested in " + kvp.Key + ": "
-                        : "";
-
-                    return sentimentPrefix + personalise + GetRandomResponse(kvp.Key)
-                           + "\n\nWant more tips? Just say 'tell me more'!";
-                }
+                return sentimentPrefix + personalise + GetRandomResponse(keyword)
+                       + "\n\nWant more tips? Type \"tell me more\".";
             }
 
-            // Default fallback
             _lastTopic = string.Empty;
             return _defaultResponses[_random.Next(_defaultResponses.Count)];
+        }
+
+        private string ResolveKeyword(string lower)
+        {
+            foreach (var kvp in _keywordResponses)
+                if (lower.Contains(kvp.Key))
+                    return kvp.Key;
+
+            foreach (var kvp in _nlpSynonyms)
+                if (lower.Contains(kvp.Key.ToLower()))
+                    return kvp.Value;
+
+            return null;
+        }
+
+        private static bool IsActivityLogCommand(string lower)
+        {
+            return lower.Contains("activity log") || lower.Contains("show log") ||
+                   lower.Contains("what have you done") || lower.Contains("recent actions") ||
+                   lower.Contains("action log") || lower.Contains("show history") ||
+                   lower.Contains("what did you do");
         }
 
         private string GetRandomResponse(string keyword)
@@ -210,22 +291,15 @@ namespace CyberSecurityChatbot.Services
 
             List<string> responses = _keywordResponses[keyword];
 
-            // Track used indices per keyword
             if (!_usedIndices.ContainsKey(keyword))
                 _usedIndices[keyword] = new List<int>();
 
             List<int> used = _usedIndices[keyword];
+            if (used.Count >= responses.Count) used.Clear();
 
-            // If all responses have been used, reset so they can repeat again
-            if (used.Count >= responses.Count)
-                used.Clear();
-
-            // Pick a random index that hasn't been used yet
             int index;
-            do
-            {
-                index = _random.Next(responses.Count);
-            } while (used.Contains(index));
+            do { index = _random.Next(responses.Count); }
+            while (used.Contains(index));
 
             used.Add(index);
             return responses[index];
@@ -233,7 +307,7 @@ namespace CyberSecurityChatbot.Services
 
         private static string ExtractName(string input)
         {
-            string[] patterns = { "my name is ", "i am ", "i'm " };
+            string[] patterns = { "my name is ", "i am ", "i'm ", "call me " };
             string lower = input.ToLower();
             foreach (var pattern in patterns)
             {
