@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Task Service — NLP-based task command detection and JSON persistence
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
